@@ -80,12 +80,17 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     end
 
     # If prefix is absent and base is 'b'
-    if prefix == '' && /[[:lower:]]/.match(base)
+    if prefix == '' && base == 'b'
       result /= 8
     end
 
-    # If prefix is uppercase (e.g. M) and base is 'b', the we've been given bits
-    if /[[:upper:]]/.match(prefix) && /[[:lower:]]/.match(base)
+    # If prefix is uppercase (e.g. M) and base is 'b', then we've been given bits
+    if /[[:upper:]]/.match(prefix) && base == 'b'
+      result /= 8
+    end
+
+    # "kb" is a special case, we've been given bits
+    if prefix == 'k' && base == 'b'
       result /= 8
     end
 

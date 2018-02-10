@@ -56,11 +56,6 @@ describe LogStash::Filters::Bytes do
       expect(subject.get('dest')).to eq(32 * 1024)
     end
 
-    sample("32kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024)
-    end
-
     sample("32KB") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(32 * 1024)
@@ -68,6 +63,11 @@ describe LogStash::Filters::Bytes do
   end
 
   describe "from kilobits" do
+    sample("32kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(32 * 1024 / 8)
+    end
+
     sample("32Kb") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(32 * 1024 / 8)
@@ -195,14 +195,14 @@ describe LogStash::Filters::Bytes do
   end
 
   describe "with spaces" do
-    sample("32 kb") do
+    sample("32 mb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024)
+      expect(subject.get('dest')).to eq(32 * 1024 * 1024)
     end
 
-    sample("32\tkb") do
+    sample("32\tmb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024)
+      expect(subject.get('dest')).to eq(32 * 1024 * 1024)
     end
   end
 end
