@@ -4,9 +4,9 @@ Gem::Specification.new do |s|
   s.licenses      = ['Apache-2.0']
   s.summary       = "This filter parses strings representing computer storage sizes into numeric bytes"
   s.description   = 'This filter parses strings representing computer storage sizes (e.g. "123 MB" or "6.3GB") into numeric bytes (12'
-  s.homepage      = 'https://github.com/ycombinator/logstash-filter-bytes'
-  s.authors       = ['Shaunak Kashyap']
-  s.email         = 'ycombinator@gmail.com'
+  s.homepage      = 'https://github.com/logstash-plugins/logstash-filter-bytes'
+  s.authors       = ['Elastic']
+  s.email         = 'info@elastic.co'
   s.require_paths = ['lib']
 
   # Files
