@@ -8,14 +8,14 @@ require "logstash/namespace"
 #
 class LogStash::Filters::Bytes < LogStash::Filters::Base
 
-  @@prefix_powers = {
+  PREFIX_POWERS = {
     'k' => 1, # 1 kilobyte = 1024 ^ 1 bytes
     'm' => 2, # 1 megabyte = 1024 ^ 2 bytes
     'g' => 3, # 1 gigabyte = 1024 ^ 3 bytes
     't' => 4, # 1 terabyte = 1024 ^ 4 bytes
     'p' => 5, # 1 petabyte = 1024 ^ 5 bytes
     'e' => 6  # 1 exabyte = 1024 ^ 6 bytes
-  }
+  }.freeze
 
   # Setting the config_name here is required. This is how you
   # configure this filter from your Logstash config.
@@ -76,7 +76,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     # Convert the number to bytes
     result = number.to_f
     if prefix != ''
-      result *= (1024 ** @@prefix_powers[prefix.downcase])
+      result *= (1024 ** PREFIX_POWERS[prefix.downcase])
     end
 
     # If prefix is absent and base is 'b'
