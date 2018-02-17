@@ -20,7 +20,7 @@ include::{include_path}/plugin_header.asciidoc[]
 
 ==== Description
 
-Parse string representations of computer storage sizes such as "123 MB" or "5.6Gb" into
+Parse string representations of computer storage sizes, such as "123 MB" or "5.6Gb", into
 their numeric value in bytes.
 
 This plugin understands: 
@@ -66,6 +66,14 @@ It also recognizes units as bits.
 |10 Mb |1310720
 |=======================================================================
 
+[source,ruby]
+    filter {
+      bytes {
+        source => "my_bytes_string_field",
+        target => "my_bytes_numeric_field"
+      }
+    }
+
 [id="plugins-{type}s-{plugin}-options"]
 ==== Bytes Filter Configuration Options
 
@@ -87,16 +95,16 @@ filter plugins.
 ===== `source` 
 
   * Value type is <<string,string>>
-  * Default value is `description`
+  * Default value is `message`
 
-Name of source field from which to parse the storage size string.
+Name of the source field that contains the storage size
 
 [id="plugins-{type}s-{plugin}-target"]
 ===== `target` 
 
   * Value type is <<string,string>>
 
-Name of target field into which numeric value in bytes should be written.
+Name of the target field that will contain the storage size in bytes
 
 [id="plugins-{type}s-{plugin}-common-options"]
 include::{include_path}/{type}.asciidoc[]
