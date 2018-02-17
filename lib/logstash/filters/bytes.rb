@@ -59,9 +59,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     end
 
     number, prefix, base = match.captures
-    # Take out any non-numeric characters or periods (e.g. delimiters) from
-    # the number
-    # TODO: i18n
+    # Take out any commas (thousand separator) from the number
     number.tr!('^0-9.', '')
 
     if number == ''
