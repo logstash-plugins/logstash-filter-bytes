@@ -69,7 +69,7 @@ It also recognizes units as bits.
 [source,ruby]
     filter {
       bytes {
-        source => "my_bytes_string_field",
+        source => "my_bytes_string_field"
         target => "my_bytes_numeric_field"
       }
     }
