@@ -76,21 +76,6 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
       result *= (1024 ** PREFIX_POWERS[prefix.downcase])
     end
 
-    # If prefix is absent and base is 'b'
-    if prefix == '' && base == 'b'
-      result /= 8
-    end
-
-    # If prefix is uppercase (e.g. M) and base is 'b', then we've been given bits
-    if /[[:upper:]]/.match(prefix) && base == 'b'
-      result /= 8
-    end
-
-    # "kb" is a special case, we've been given bits
-    if prefix == 'k' && base == 'b'
-      result /= 8
-    end
-
     event.set(@target, result)
 
     # filter_matched should go in the last line of our successful code

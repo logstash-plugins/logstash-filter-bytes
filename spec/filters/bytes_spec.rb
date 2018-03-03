@@ -43,13 +43,6 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "from bits" do
-    sample("32b") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(4)
-    end
-  end
-
   describe "from kilobytes" do
     sample("32kB") do
       expect(subject).to include("dest")
@@ -59,18 +52,6 @@ describe LogStash::Filters::Bytes do
     sample("32KB") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(32 * 1024)
-    end
-  end
-
-  describe "from kilobits" do
-    sample("32kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 / 8)
-    end
-
-    sample("32Kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 / 8)
     end
   end
 
@@ -91,13 +72,6 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "from megabits" do
-    sample("32Mb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 / 8)
-    end
-  end
-
   describe "from gigabytes" do
     sample("32gB") do
       expect(subject).to include("dest")
@@ -112,13 +86,6 @@ describe LogStash::Filters::Bytes do
     sample("32GB") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024)
-    end
-  end
-
-  describe "from gigabits" do
-    sample("32Gb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 / 8)
     end
   end
 
@@ -139,13 +106,6 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "from terabits" do
-    sample("32Tb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 / 8)
-    end
-  end
-
   describe "from petabytes" do
     sample("32pB") do
       expect(subject).to include("dest")
@@ -163,12 +123,6 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "from petabits" do
-    sample("32Pb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 / 8)
-    end
-  end
   describe "with spaces" do
     sample("32 mb") do
       expect(subject).to include("dest")
