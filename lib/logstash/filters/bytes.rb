@@ -34,6 +34,10 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   # Target field name
   config :target, :validate => :string
 
+  # Append values to the `tags` field when there has been no
+  # successful match
+  config :tag_on_failure, :validate => :array, :default => ["_bytesparsefailure"]
+
   public
   def register
     # Add instance variables 
@@ -45,6 +49,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     source = event.get(@source)
 
     if !source
+      @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
     source.strip!
@@ -53,7 +58,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     # the unit prefix part (e.g. M), and the unit base part (e.g. B)
     match = source.match(/^([0-9\,\.]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
     if !match
-      event.set(@target, 0)
+      @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 
@@ -62,7 +67,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     number.tr!('^0-9.', '')
 
     if number == ''
-      event.set(@target, 0)
+      @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 

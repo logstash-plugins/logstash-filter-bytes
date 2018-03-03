@@ -7,6 +7,7 @@ describe LogStash::Filters::Bytes do
     filter {
       bytes {
         target => dest
+        tag_on_failure => [ "boom", "_bytesparsefailure" ]
       }
     }
   CONFIG
@@ -14,8 +15,19 @@ describe LogStash::Filters::Bytes do
 
   describe "empty" do
     sample("") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(0)
+      expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
+    end
+  end
+
+  describe "garbage" do
+    sample("abcdef") do
+      expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
+    end
+  end
+
+  describe "no number, only units" do
+    sample("mb") do
+      expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
     end
   end
 
