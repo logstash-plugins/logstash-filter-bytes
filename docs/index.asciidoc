@@ -31,7 +31,6 @@ This plugin understands:
 - gigabytes ("GB", "gb", or "gB")
 - terabytes ("TB", "tb", or "tB")
 - petabytes ("PB", "pb", or "pB")
-- exabytes ("EB", "eb", or "eB")
 
 It also recognizes units as bits.
 
@@ -41,8 +40,6 @@ It also recognizes units as bits.
 - gigabits ("Gb")
 - terabits ("Tb")
 - petabits ("Gb")
-- exabits ("Eb")
-
 
 [id="plugins-{type}s-{plugin}-examples"]
 ==== Examples

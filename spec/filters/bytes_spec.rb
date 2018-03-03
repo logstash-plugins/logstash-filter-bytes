@@ -169,31 +169,6 @@ describe LogStash::Filters::Bytes do
       expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 / 8)
     end
   end
-
-  describe "from exabytes" do
-    sample("32eB") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024)
-    end
-
-    sample("32eb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024)
-    end
-
-    sample("32EB") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024)
-    end
-  end
-
-  describe "from exabits" do
-    sample("32Eb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 / 8)
-    end
-  end
-
   describe "with spaces" do
     sample("32 mb") do
       expect(subject).to include("dest")
