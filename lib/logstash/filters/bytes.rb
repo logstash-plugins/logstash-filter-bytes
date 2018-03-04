@@ -16,6 +16,8 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     'p' => 5, # 1 petabyte = 1024 ^ 5 bytes
   }.freeze
 
+  VALID_PREFIX_SYSTEMS = [ "binary", "metric" ]
+
   # Setting the config_name here is required. This is how you
   # configure this filter from your Logstash config.
   #
@@ -34,6 +36,9 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   # Target field name
   config :target, :validate => :string
 
+  # Prefix system, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
+  config :prefix_system, :validate => :string, :default => "binary"
+
   # Append values to the `tags` field when there has been no
   # successful match
   config :tag_on_failure, :validate => :array, :default => ["_bytesparsefailure"]
@@ -48,6 +53,10 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     source = event.get(@source)
 
+    if !VALID_PREFIX_SYSTEMS.include?(@prefix_system)
+      raise LogStash::ConfigurationError, "Base '#{@prefix_system}' is invalid! Pick one of #{VALID_PREFIX_SYSTEMS}"
+    end
+
     if !source
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
@@ -55,14 +64,14 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     source.strip!
 
     # Parse the source into the number part (e.g. 123),
-    # the unit prefix part (e.g. M), and the unit base part (e.g. B)
+    # the unit prefix part (e.g. M), and the unit suffix part (e.g. B)
     match = source.match(/^([0-9\,\.]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
     if !match
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 
-    number, prefix, base = match.captures
+    number, prefix, suffix = match.captures
     # Take out any commas (thousand separator) from the number
     number.tr!('^0-9.', '')
 
@@ -71,14 +80,18 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
       return
     end
 
-    if base == ''
-      base = 'B'
+    if suffix == ''
+      suffix = 'B'
     end
 
     # Convert the number to bytes
     result = number.to_f
     if prefix != ''
-      result *= (1024 ** PREFIX_POWERS[prefix.downcase])
+      if @prefix_system == 'binary'
+        result *= (1024 ** PREFIX_POWERS[prefix.downcase])
+      else
+        result *= (1000 ** PREFIX_POWERS[prefix.downcase])
+      end
     end
 
     event.set(@target, result)

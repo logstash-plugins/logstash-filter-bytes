@@ -146,4 +146,21 @@ describe LogStash::Filters::Bytes do
       expect(subject.get('dest')).to eq(32 * 1024 * 1024)
     end
   end
+
+  describe "using metric system for prefix" do
+    let(:config) do <<-CONFIG
+      filter {
+        bytes {
+          target => dest
+          prefix_system => metric
+        }
+      }
+    CONFIG
+    end
+
+    sample("32 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(32 * 1000 * 1000)
+    end
+  end
 end
