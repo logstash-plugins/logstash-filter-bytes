@@ -163,4 +163,24 @@ describe LogStash::Filters::Bytes do
       expect(subject.get('dest')).to eq(32 * 1000 * 1000)
     end
   end
+
+  describe "using invalid system for prefix" do
+
+    let(:config) { Hash.new }
+    subject { described_class.new(config) }
+
+    let(:config) do
+      {
+        "target" => "dest",
+        "prefix_system" => "garbage"
+      }
+    end
+
+    let(:event) { LogStash::Event.new("message" => "100KB") }
+
+    it "raises exception" do
+      subject.register
+      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError)
+    end
+  end
 end
