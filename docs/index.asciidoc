@@ -106,21 +106,14 @@ Name of the target field that will contain the storage size in bytes
 
 Which prefix system to use when converting to bytes. `binary` uses `1K = 1024B`. `metric` uses `1K = 1000B`.
 
-[id="plugins-{type}s-{plugin}-digit_group_separator"]
-===== `source` 
-
-  * Value type is <<string,string>>
-  * Default value is ` ` (a space)
-
-Separator, if any, used in grouping digits to the left of the decimal
-
 [id="plugins-{type}s-{plugin}-decimal_separator"]
 ===== `source` 
 
   * Value type is <<string,string>>
   * Default value is `.`
 
-Separator, if any, used as the decimal
+Separator, if any, used as the decimal. This value is only used if the plugin cannot guess the decimal
+separator by looking at the string in the `source` field.
 
 [id="plugins-{type}s-{plugin}-common-options"]
 include::{include_path}/{type}.asciidoc[]

@@ -184,68 +184,151 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "using non-default digit group separator" do
-    let(:config) do <<-CONFIG
-      filter {
-        bytes {
-          target => dest
-          digit_group_separator => ","
-        }
-      }
-    CONFIG
+  describe "0 digits to right of rightmost separator" do
+    sample("3, mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3 * 1024 * 1024)
     end
 
-    sample("3,215 mb") do
+    sample("1. kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3215 * 1024 * 1024)
-    end
-
-    sample("1,1 kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(11 * 1024)
+      expect(subject.get('dest')).to eq(1 * 1024)
     end
   end
 
-  describe "using non-default decimal separator" do
-    let(:config) do <<-CONFIG
-      filter {
-        bytes {
-          target => dest
-          decimal_separator => ","
+  describe "1 digit to right of rightmost separator" do
+    sample("3,9 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3.9 * 1024 * 1024)
+    end
+
+    sample("1.9 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(1.9 * 1024)
+    end
+
+    describe "with non-default decimal separator" do
+      let(:config) do <<-CONFIG
+        filter {
+          bytes {
+            target => dest
+            decimal_separator => ','
+          }
         }
-      }
-    CONFIG
-    end
+      CONFIG
+      end
 
-    sample("3 215,6 mb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3215.6 * 1024 * 1024)
-    end
+      sample("3,9 mb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(3.9 * 1024 * 1024)
+      end
 
-    sample("1 234,1 kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1234.1 * 1024)
+      sample("1.9 kb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(1.9 * 1024)
+      end
     end
   end
 
-  describe "using same digit group separator as decimal separator" do
-    let(:config) { Hash.new }
-    subject { described_class.new(config) }
-
-    let(:config) do
-      {
-        "target" => "dest",
-        "digit_group_separator" => ".",
-        "decimal_separator" => "."
-      }
+  describe "2 digits to right of rightmost separator" do
+    sample("3,98 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3.98 * 1024 * 1024)
     end
 
-    let(:event) { LogStash::Event.new("message" => "1.000.123KB") }
+    sample("1.98 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(1.98 * 1024)
+    end
 
-    it "raises exception" do
-      subject.register
-      expected_message = "Digit group separator and decimal separator cannot be the same: '.'"
-      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError, expected_message)
+    describe "with non-default decimal separator" do
+      let(:config) do <<-CONFIG
+        filter {
+          bytes {
+            target => dest
+            decimal_separator => ','
+          }
+        }
+      CONFIG
+      end
+
+      sample("3,98 mb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(3.98 * 1024 * 1024)
+      end
+
+      sample("1.98 kb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(1.98 * 1024)
+      end
+    end
+  end
+
+  describe "3 digits to right of rightmost separator" do
+    sample("3,987 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3987 * 1024 * 1024)
+    end
+
+    sample("1.987 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(1.987 * 1024)
+    end
+
+    describe "with non-default decimal separator" do
+      let(:config) do <<-CONFIG
+        filter {
+          bytes {
+            target => dest
+            decimal_separator => ','
+          }
+        }
+      CONFIG
+      end
+
+      sample("3,987 mb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(3.987 * 1024 * 1024)
+      end
+
+      sample("1.987 kb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(1987 * 1024)
+      end
+    end
+  end
+
+  describe "4 digits to right of rightmost separator" do
+    sample("3,9876 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3.9876 * 1024 * 1024)
+    end
+
+    sample("1.9876 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(1.9876 * 1024)
+    end
+
+    describe "with non-default decimal separator" do
+      let(:config) do <<-CONFIG
+        filter {
+          bytes {
+            target => dest
+            decimal_separator => ','
+          }
+        }
+      CONFIG
+      end
+
+      sample("3,9876 mb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(3.9876 * 1024 * 1024)
+      end
+
+      sample("1.9876 kb") do
+        expect(subject).to include("dest")
+        expect(subject.get('dest')).to eq(1.9876 * 1024)
+      end
     end
   end
 end

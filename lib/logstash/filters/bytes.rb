@@ -18,6 +18,8 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
   VALID_PREFIX_SYSTEMS = [ "binary", "metric" ]
 
+  DIGIT_GROUP_SEPARATORS = " _,."
+
   # Setting the config_name here is required. This is how you
   # configure this filter from your Logstash config.
   #
@@ -39,9 +41,6 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   # Prefix system, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
   config :prefix_system, :validate => :string, :default => "binary"
 
-  # Digit group separator
-  config :digit_group_separator, :validate => :string, :default => " "
-
   # Decimal separator
   config :decimal_separator, :validate => :string, :default => "."
 
@@ -50,14 +49,48 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   config :tag_on_failure, :validate => :array, :default => ["_bytesparsefailure"]
 
   private
+  def normalize_number_with_decimal_separator_position(number, decimal_separator_position)
+    # Normalized number is:
+    # - digits to left of the decimal separator all smooshed together (ignoring any non-digits), plus
+    # - the decimal separator (normalized to '.'), plus
+    # - the digits to the right of the decimal separator
+    return number[0, decimal_separator_position].tr('^0-9', '') \
+      + '.' \
+      + number[decimal_separator_position + 1 .. -1].to_s
+  end
+
+  private
   def normalize_number(number)
-    # Smush all digits left of the decimal together
-    normalized = number.tr(@digit_group_separator, '')
+    # Assume decimal separator can be either . or ,. Count the number of these.
+    num_separators = number.count(".,")
 
-    # Normalize decimal
-    normalized = normalized.tr(@decimal_separator, '.')
+    # If there are no separators, we're good as-is
+    if num_separators == 0
+      return number
+    end
 
-    return normalized
+    decimal_separator_position = [ number.rindex('.') || -1, number.rindex(',') || -1].max
+
+    # If there's more than one, then the rightmost one is the decimal separator. The rest
+    # are digit group separators
+    if num_separators > 1
+      return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
+    end
+
+    # There's only one separator so we need to do some further checking
+
+    # If the number of digits to the right of the separator is less than or greater than 3
+    # then we can assume it's a decimal separator
+    right_of_separator = number[decimal_separator_position + 1 .. -1]
+    if right_of_separator.length != 3
+      return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
+    end
+
+    # There are exactly 3 digits to the right of the separator. We can't be sure if it's a decimal
+    # separator or digit groups separator (e.g. is 1,333mb == 1333mb or 1333kb?). So we look at the
+    # decimal_separator option to disambiguate
+    decimal_separator_position = number.index(@decimal_separator) || number.length
+    return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
   end
 
   public
@@ -74,10 +107,6 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
       raise LogStash::ConfigurationError, "Prefix system '#{@prefix_system}' is invalid! Pick one of #{VALID_PREFIX_SYSTEMS}"
     end
 
-    if @digit_group_separator == @decimal_separator
-      raise LogStash::ConfigurationError, "Digit group separator and decimal separator cannot be the same: '#{@digit_group_separator}'"
-    end
-
     if !source
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
@@ -86,14 +115,14 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     # Parse the source into the number part (e.g. 123),
     # the unit prefix part (e.g. M), and the unit suffix part (e.g. B)
-    match = source.match(/^([0-9#{@digit_group_separator}#{@decimal_separator}]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
+    match = source.match(/^([0-9#{DIGIT_GROUP_SEPARATORS}#{@decimal_separator}]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
     if !match
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 
     number, prefix, suffix = match.captures
-    number = normalize_number(number)
+    number = normalize_number(number.strip)
 
     if number == ''
       @tag_on_failure.each{|tag| event.tag(tag)}
