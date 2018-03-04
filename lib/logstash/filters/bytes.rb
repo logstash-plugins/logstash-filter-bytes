@@ -39,9 +39,26 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   # Prefix system, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
   config :prefix_system, :validate => :string, :default => "binary"
 
+  # Digit group separator
+  config :digit_group_separator, :validate => :string, :default => " "
+
+  # Decimal separator
+  config :decimal_separator, :validate => :string, :default => "."
+
   # Append values to the `tags` field when there has been no
   # successful match
   config :tag_on_failure, :validate => :array, :default => ["_bytesparsefailure"]
+
+  private
+  def normalize_number(number)
+    # Smush all digits left of the decimal together
+    normalized = number.tr(@digit_group_separator, '')
+
+    # Normalize decimal
+    normalized = normalized.tr(@decimal_separator, '.')
+
+    return normalized
+  end
 
   public
   def register
@@ -54,7 +71,11 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     source = event.get(@source)
 
     if !VALID_PREFIX_SYSTEMS.include?(@prefix_system)
-      raise LogStash::ConfigurationError, "Base '#{@prefix_system}' is invalid! Pick one of #{VALID_PREFIX_SYSTEMS}"
+      raise LogStash::ConfigurationError, "Prefix system '#{@prefix_system}' is invalid! Pick one of #{VALID_PREFIX_SYSTEMS}"
+    end
+
+    if @digit_group_separator == @decimal_separator
+      raise LogStash::ConfigurationError, "Digit group separator and decimal separator cannot be the same: '#{@digit_group_separator}'"
     end
 
     if !source
@@ -65,15 +86,14 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     # Parse the source into the number part (e.g. 123),
     # the unit prefix part (e.g. M), and the unit suffix part (e.g. B)
-    match = source.match(/^([0-9\,\.]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
+    match = source.match(/^([0-9#{@digit_group_separator}#{@decimal_separator}]*)\s*([kKmMgGtTpPeE]?)([bB]?)$/)
     if !match
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 
     number, prefix, suffix = match.captures
-    # Take out any commas (thousand separator) from the number
-    number.tr!('^0-9.', '')
+    number = normalize_number(number)
 
     if number == ''
       @tag_on_failure.each{|tag| event.tag(tag)}

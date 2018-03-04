@@ -165,7 +165,6 @@ describe LogStash::Filters::Bytes do
   end
 
   describe "using invalid system for prefix" do
-
     let(:config) { Hash.new }
     subject { described_class.new(config) }
 
@@ -180,7 +179,73 @@ describe LogStash::Filters::Bytes do
 
     it "raises exception" do
       subject.register
-      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError)
+      expected_message = "Prefix system 'garbage' is invalid! Pick one of [\"binary\", \"metric\"]"
+      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError, expected_message)
+    end
+  end
+
+  describe "using non-default digit group separator" do
+    let(:config) do <<-CONFIG
+      filter {
+        bytes {
+          target => dest
+          digit_group_separator => ","
+        }
+      }
+    CONFIG
+    end
+
+    sample("3,215 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3215 * 1024 * 1024)
+    end
+
+    sample("1,1 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(11 * 1024)
+    end
+  end
+
+  describe "using non-default decimal separator" do
+    let(:config) do <<-CONFIG
+      filter {
+        bytes {
+          target => dest
+          decimal_separator => ","
+        }
+      }
+    CONFIG
+    end
+
+    sample("3 215,6 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3215.6 * 1024 * 1024)
+    end
+
+    sample("1 234,1 kb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(1234.1 * 1024)
+    end
+  end
+
+  describe "using same digit group separator as decimal separator" do
+    let(:config) { Hash.new }
+    subject { described_class.new(config) }
+
+    let(:config) do
+      {
+        "target" => "dest",
+        "digit_group_separator" => ".",
+        "decimal_separator" => "."
+      }
+    end
+
+    let(:event) { LogStash::Event.new("message" => "1.000.123KB") }
+
+    it "raises exception" do
+      subject.register
+      expected_message = "Digit group separator and decimal separator cannot be the same: '.'"
+      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError, expected_message)
     end
   end
 end
