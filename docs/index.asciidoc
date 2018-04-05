@@ -39,12 +39,12 @@ This plugin understands:
 [cols="<,<",options="header",]
 |=======================================================================
 |Input string |Prefix system | Numeric value in bytes
-|40|`binary` or `decimal`|40
-|40B|`binary` or `decimal`|40
-|40 B|`binary` or `decimal`|40
+|40|`binary` or `metric`|40
+|40B|`binary` or `metric`|40
+|40 B|`binary` or `metric`|40
 |40KB|`binary`|40960
 |40kB|`binary`|40960
-|40KB|`decimal`|40000
+|40KB|`metric`|40000
 |40.5KB|`binary`|41472
 |40kb|`binary`|5120
 |40Kb|`binary`|5120
