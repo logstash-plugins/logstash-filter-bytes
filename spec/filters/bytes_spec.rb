@@ -44,14 +44,14 @@ describe LogStash::Filters::Bytes do
 
     sample("12.3") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(12.3)
+      expect(subject.get('dest')).to eq(12)
     end
   end
 
   describe "from bytes" do
     sample("32.8B") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(32.8)
+      expect(subject.get('dest')).to eq(33)
     end
   end
 
@@ -179,12 +179,12 @@ describe LogStash::Filters::Bytes do
   describe "1 digit to right of rightmost separator" do
     sample("3,9 mb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3.9 * 1024 * 1024)
+      expect(subject.get('dest')).to eq((3.9 * 1024 * 1024).round)
     end
 
     sample("1.9 kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1.9 * 1024)
+      expect(subject.get('dest')).to eq((1.9 * 1024).round)
     end
 
     describe "with non-default decimal separator" do
@@ -200,12 +200,12 @@ describe LogStash::Filters::Bytes do
 
       sample("3,9 mb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(3.9 * 1024 * 1024)
+        expect(subject.get('dest')).to eq((3.9 * 1024 * 1024).round)
       end
 
       sample("1.9 kb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(1.9 * 1024)
+        expect(subject.get('dest')).to eq((1.9 * 1024).round)
       end
     end
   end
@@ -213,12 +213,12 @@ describe LogStash::Filters::Bytes do
   describe "2 digits to right of rightmost separator" do
     sample("3,98 mb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3.98 * 1024 * 1024)
+      expect(subject.get('dest')).to eq((3.98 * 1024 * 1024).round)
     end
 
     sample("1.98 kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1.98 * 1024)
+      expect(subject.get('dest')).to eq((1.98 * 1024).round)
     end
 
     describe "with non-default decimal separator" do
@@ -234,12 +234,12 @@ describe LogStash::Filters::Bytes do
 
       sample("3,98 mb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(3.98 * 1024 * 1024)
+        expect(subject.get('dest')).to eq((3.98 * 1024 * 1024).round)
       end
 
       sample("1.98 kb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(1.98 * 1024)
+        expect(subject.get('dest')).to eq((1.98 * 1024).round)
       end
     end
   end
@@ -252,7 +252,7 @@ describe LogStash::Filters::Bytes do
 
     sample("1.987 kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1.987 * 1024)
+      expect(subject.get('dest')).to eq((1.987 * 1024).round)
     end
 
     describe "with non-default decimal separator" do
@@ -268,7 +268,7 @@ describe LogStash::Filters::Bytes do
 
       sample("3,987 mb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(3.987 * 1024 * 1024)
+        expect(subject.get('dest')).to eq((3.987 * 1024 * 1024).round)
       end
 
       sample("1.987 kb") do
@@ -281,12 +281,12 @@ describe LogStash::Filters::Bytes do
   describe "4 digits to right of rightmost separator" do
     sample("3,9876 mb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3.9876 * 1024 * 1024)
+      expect(subject.get('dest')).to eq((3.9876 * 1024 * 1024).round)
     end
 
     sample("1.9876 kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1.9876 * 1024)
+      expect(subject.get('dest')).to eq((1.9876 * 1024).round)
     end
 
     describe "with non-default decimal separator" do
@@ -302,12 +302,12 @@ describe LogStash::Filters::Bytes do
 
       sample("3,9876 mb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(3.9876 * 1024 * 1024)
+        expect(subject.get('dest')).to eq((3.9876 * 1024 * 1024).round)
       end
 
       sample("1.9876 kb") do
         expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(1.9876 * 1024)
+        expect(subject.get('dest')).to eq((1.9876 * 1024).round)
       end
     end
   end

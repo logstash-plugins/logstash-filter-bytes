@@ -136,6 +136,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
         result *= (1000 ** PREFIX_POWERS[prefix.downcase])
       end
     end
+    result = result.round
 
     event.set(@target, result)
 
