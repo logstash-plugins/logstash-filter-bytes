@@ -16,8 +16,6 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     'p' => 5, # 1 petabyte = 1024 ^ 5 bytes
   }.freeze
 
-  VALID_CONVERSION_METHODS = [ "binary", "metric" ]
-
   DIGIT_GROUP_SEPARATORS = " _,."
 
   # Setting the config_name here is required. This is how you
@@ -39,10 +37,10 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   config :target, :validate => :string
 
   # Conversion method, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
-  config :conversion_method, :validate => :string, :default => "binary"
+  config :conversion_method, :validate => [ "binary", "metric" ], :default => "binary"
 
   # Decimal separator
-  config :decimal_separator, :validate => :string, :default => "."
+  config :decimal_separator, :validate => [ ".", "," ] , :default => "."
 
   # Append values to the `tags` field when there has been no
   # successful match
@@ -102,10 +100,6 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   def filter(event)
 
     source = event.get(@source)
-
-    if !VALID_CONVERSION_METHODS.include?(@conversion_method)
-      raise LogStash::ConfigurationError, "Conversion method '#{@conversion_method}' is invalid! Pick one of #{VALID_CONVERSION_METHODS}"
-    end
 
     if !source
       @tag_on_failure.each{|tag| event.tag(tag)}

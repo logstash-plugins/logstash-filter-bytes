@@ -147,7 +147,7 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "using metric system for prefix" do
+  describe "using metric conversion system" do
     let(:config) do <<-CONFIG
       filter {
         bytes {
@@ -161,26 +161,6 @@ describe LogStash::Filters::Bytes do
     sample("32 mb") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(32 * 1000 * 1000)
-    end
-  end
-
-  describe "using invalid system for prefix" do
-    let(:config) { Hash.new }
-    subject { described_class.new(config) }
-
-    let(:config) do
-      {
-        "target" => "dest",
-        "conversion_method" => "garbage"
-      }
-    end
-
-    let(:event) { LogStash::Event.new("message" => "100KB") }
-
-    it "raises exception" do
-      subject.register
-      expected_message = "Conversion method 'garbage' is invalid! Pick one of [\"binary\", \"metric\"]"
-      expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError, expected_message)
     end
   end
 
