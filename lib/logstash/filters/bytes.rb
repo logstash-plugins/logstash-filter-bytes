@@ -16,7 +16,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     'p' => 5, # 1 petabyte = 1024 ^ 5 bytes
   }.freeze
 
-  VALID_PREFIX_SYSTEMS = [ "binary", "metric" ]
+  VALID_CONVERSION_METHODS = [ "binary", "metric" ]
 
   DIGIT_GROUP_SEPARATORS = " _,."
 
@@ -38,8 +38,8 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   # Target field name
   config :target, :validate => :string
 
-  # Prefix system, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
-  config :prefix_system, :validate => :string, :default => "binary"
+  # Conversion method, either "binary" (1K = 1024B) or "metric" (1K = 1000B)
+  config :conversion_method, :validate => :string, :default => "binary"
 
   # Decimal separator
   config :decimal_separator, :validate => :string, :default => "."
@@ -103,8 +103,8 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     source = event.get(@source)
 
-    if !VALID_PREFIX_SYSTEMS.include?(@prefix_system)
-      raise LogStash::ConfigurationError, "Prefix system '#{@prefix_system}' is invalid! Pick one of #{VALID_PREFIX_SYSTEMS}"
+    if !VALID_CONVERSION_METHODS.include?(@conversion_method)
+      raise LogStash::ConfigurationError, "Conversion method '#{@conversion_method}' is invalid! Pick one of #{VALID_CONVERSION_METHODS}"
     end
 
     if !source
@@ -136,7 +136,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     # Convert the number to bytes
     result = number.to_f
     if prefix != ''
-      if @prefix_system == 'binary'
+      if @conversion_method == 'binary'
         result *= (1024 ** PREFIX_POWERS[prefix.downcase])
       else
         result *= (1000 ** PREFIX_POWERS[prefix.downcase])

@@ -152,7 +152,7 @@ describe LogStash::Filters::Bytes do
       filter {
         bytes {
           target => dest
-          prefix_system => metric
+          conversion_method => metric
         }
       }
     CONFIG
@@ -171,7 +171,7 @@ describe LogStash::Filters::Bytes do
     let(:config) do
       {
         "target" => "dest",
-        "prefix_system" => "garbage"
+        "conversion_method" => "garbage"
       }
     end
 
@@ -179,7 +179,7 @@ describe LogStash::Filters::Bytes do
 
     it "raises exception" do
       subject.register
-      expected_message = "Prefix system 'garbage' is invalid! Pick one of [\"binary\", \"metric\"]"
+      expected_message = "Conversion method 'garbage' is invalid! Pick one of [\"binary\", \"metric\"]"
       expect { subject.filter(event) }.to raise_error(LogStash::ConfigurationError, expected_message)
     end
   end
