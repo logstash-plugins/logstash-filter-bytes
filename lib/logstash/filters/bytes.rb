@@ -14,6 +14,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     'g' => 3, # 1 gigabyte = 1024 ^ 3 bytes
     't' => 4, # 1 terabyte = 1024 ^ 4 bytes
     'p' => 5, # 1 petabyte = 1024 ^ 5 bytes
+    'e' => 6, # 1 exabyte = 1024 ^ 6 bytes
   }.freeze
 
   DIGIT_GROUP_SEPARATORS = " _,."
