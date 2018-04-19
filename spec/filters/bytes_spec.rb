@@ -181,19 +181,60 @@ describe LogStash::Filters::Bytes do
     end
   end
 
-  describe "0 digits to right of rightmost separator" do
-    sample("3, mb") do
+  describe "no decimal separator" do
+    sample("3 mb") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq(3 * 1024 * 1024)
-    end
+    end      
 
-    sample("1. kb") do
+    sample("3,124 mb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(1 * 1024)
+      expect(subject.get('dest')).to eq(3124 * 1024 * 1024)
+    end      
+  end
+
+  describe "digits only to right of decimal separator" do
+    sample(".3124 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq((0.3124 * 1024 * 1024).round)
     end
   end
 
-  describe "1 digit to right of rightmost separator" do
+  describe "digits only to left of decimal separator" do
+    sample("3. mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3 * 1024 * 1024)
+    end      
+
+    sample("3,124. mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq(3124 * 1024 * 1024)
+    end      
+  end
+
+  describe "digits on both sides of decimal separator" do
+    sample("3.56 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq((3.56 * 1024 * 1024).round)
+    end      
+
+    sample("3,124.56 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq((3124.56 * 1024 * 1024).round)
+    end      
+  end
+
+  describe "non-default decimal separator" do
+    let(:config) do <<-CONFIG
+      filter {
+        bytes {
+          target => dest
+          decimal_separator => ','
+        }
+      }
+    CONFIG
+    end
+
     sample("3,9 mb") do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq((3.9 * 1024 * 1024).round)
@@ -201,131 +242,13 @@ describe LogStash::Filters::Bytes do
 
     sample("1.9 kb") do
       expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((1.9 * 1024).round)
-    end
-
-    describe "with non-default decimal separator" do
-      let(:config) do <<-CONFIG
-        filter {
-          bytes {
-            target => dest
-            decimal_separator => ','
-          }
-        }
-      CONFIG
-      end
-
-      sample("3,9 mb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((3.9 * 1024 * 1024).round)
-      end
-
-      sample("1.9 kb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((1.9 * 1024).round)
-      end
+      expect(subject.get('dest')).to eq((19 * 1024).round)
     end
   end
 
-  describe "2 digits to right of rightmost separator" do
-    sample("3,98 mb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((3.98 * 1024 * 1024).round)
-    end
-
-    sample("1.98 kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((1.98 * 1024).round)
-    end
-
-    describe "with non-default decimal separator" do
-      let(:config) do <<-CONFIG
-        filter {
-          bytes {
-            target => dest
-            decimal_separator => ','
-          }
-        }
-      CONFIG
-      end
-
-      sample("3,98 mb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((3.98 * 1024 * 1024).round)
-      end
-
-      sample("1.98 kb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((1.98 * 1024).round)
-      end
-    end
-  end
-
-  describe "3 digits to right of rightmost separator" do
-    sample("3,987 mb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq(3987 * 1024 * 1024)
-    end
-
-    sample("1.987 kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((1.987 * 1024).round)
-    end
-
-    describe "with non-default decimal separator" do
-      let(:config) do <<-CONFIG
-        filter {
-          bytes {
-            target => dest
-            decimal_separator => ','
-          }
-        }
-      CONFIG
-      end
-
-      sample("3,987 mb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((3.987 * 1024 * 1024).round)
-      end
-
-      sample("1.987 kb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq(1987 * 1024)
-      end
-    end
-  end
-
-  describe "4 digits to right of rightmost separator" do
-    sample("3,9876 mb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((3.9876 * 1024 * 1024).round)
-    end
-
-    sample("1.9876 kb") do
-      expect(subject).to include("dest")
-      expect(subject.get('dest')).to eq((1.9876 * 1024).round)
-    end
-
-    describe "with non-default decimal separator" do
-      let(:config) do <<-CONFIG
-        filter {
-          bytes {
-            target => dest
-            decimal_separator => ','
-          }
-        }
-      CONFIG
-      end
-
-      sample("3,9876 mb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((3.9876 * 1024 * 1024).round)
-      end
-
-      sample("1.9876 kb") do
-        expect(subject).to include("dest")
-        expect(subject.get('dest')).to eq((1.9876 * 1024).round)
-      end
+  describe "with two decimal separators" do
+    sample("1.000.000 mb") do
+      expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
     end
   end
 end

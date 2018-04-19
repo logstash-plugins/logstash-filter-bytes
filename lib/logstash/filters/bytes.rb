@@ -48,48 +48,10 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
   config :tag_on_failure, :validate => :array, :default => ["_bytesparsefailure"]
 
   private
-  def normalize_number_with_decimal_separator_position(number, decimal_separator_position)
-    # Normalized number is:
-    # - digits to left of the decimal separator all smooshed together (ignoring any non-digits), plus
-    # - the decimal separator (normalized to '.'), plus
-    # - the digits to the right of the decimal separator
-    return number[0, decimal_separator_position].tr('^0-9', '') \
-      + '.' \
-      + number[decimal_separator_position + 1 .. -1].to_s
-  end
-
-  private
   def normalize_number(number)
-    # Assume decimal separator can be either . or ,. Count the number of these.
-    num_separators = number.count(".,")
-
-    # If there are no separators, we're good as-is
-    if num_separators == 0
-      return number
-    end
-
-    decimal_separator_position = [ number.rindex('.') || -1, number.rindex(',') || -1].max
-
-    # If there's more than one, then the rightmost one is the decimal separator. The rest
-    # are digit group separators
-    if num_separators > 1
-      return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
-    end
-
-    # There's only one separator so we need to do some further checking
-
-    # If the number of digits to the right of the separator is less than or greater than 3
-    # then we can assume it's a decimal separator
-    right_of_separator = number[decimal_separator_position + 1 .. -1]
-    if right_of_separator.length != 3
-      return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
-    end
-
-    # There are exactly 3 digits to the right of the separator. We can't be sure if it's a decimal
-    # separator or digit groups separator (e.g. is 1,333mb == 1333mb or 1333kb?). So we look at the
-    # decimal_separator option to disambiguate
-    decimal_separator_position = number.index(@decimal_separator) || number.length
-    return normalize_number_with_decimal_separator_position(number, decimal_separator_position)
+    return number
+      .tr("^0-9#{@decimal_separator}", '')
+      .tr(@decimal_separator, '.')
   end
 
   public
@@ -117,9 +79,16 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
     end
 
     number, prefix, suffix = match.captures
-    number = normalize_number(number.strip)
 
+    number = normalize_number(number.strip)
     if number == ''
+      @tag_on_failure.each{|tag| event.tag(tag)}
+      return
+    end
+
+    # Flag error if more than one decimal separator is found
+    num_decimals = number.count(@decimal_separator)
+    if num_decimals > 1
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
