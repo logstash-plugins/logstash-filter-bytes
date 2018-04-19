@@ -250,5 +250,22 @@ describe LogStash::Filters::Bytes do
     sample("1.000.000 mb") do
       expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
     end
+
+    context "non-default decimal separator" do
+      let(:config) do <<-CONFIG
+        filter {
+          bytes {
+            target => dest
+            decimal_separator => ','
+            tag_on_failure => [ "boom", "_bytesparsefailure" ]
+          }
+        }
+      CONFIG
+      end
+
+      sample("1,000,000 mb") do
+        expect(subject.get('tags')).to eq(["boom", "_bytesparsefailure"])
+      end
+    end
   end
 end

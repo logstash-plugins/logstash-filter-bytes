@@ -80,15 +80,15 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     number, prefix, suffix = match.captures
 
-    number = normalize_number(number.strip)
-    if number == ''
+    # Flag error if more than one decimal separator is found
+    num_decimals = number.count(@decimal_separator)
+    if num_decimals > 1
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
 
-    # Flag error if more than one decimal separator is found
-    num_decimals = number.count(@decimal_separator)
-    if num_decimals > 1
+    number = normalize_number(number.strip)
+    if number == ''
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
