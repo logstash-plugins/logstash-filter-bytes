@@ -244,6 +244,11 @@ describe LogStash::Filters::Bytes do
       expect(subject).to include("dest")
       expect(subject.get('dest')).to eq((19 * 1024).round)
     end
+
+    sample("3.124,56 mb") do
+      expect(subject).to include("dest")
+      expect(subject.get('dest')).to eq((3124.56 * 1024 * 1024).round)
+    end
   end
 
   describe "with two decimal separators" do
