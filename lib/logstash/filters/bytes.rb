@@ -49,7 +49,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
   private
   def normalize_number(number)
-    return number
+    number
       .tr("^0-9#{@decimal_separator}", '')
       .tr(@decimal_separator, '.')
   end
