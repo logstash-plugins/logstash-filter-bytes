@@ -64,7 +64,7 @@ class LogStash::Filters::Bytes < LogStash::Filters::Base
 
     source = event.get(@source)
 
-    if !source
+    if !source or !source.is_a? String
       @tag_on_failure.each{|tag| event.tag(tag)}
       return
     end
