@@ -36,7 +36,7 @@ This plugin understands:
 ==== Examples
 
 
-[cols="<,<",options="header",]
+[cols="<,<,<",options="header",]
 |=======================================================================
 |Input string |Conversion method | Numeric value in bytes
 |40|`binary` or `metric`|40
@@ -106,7 +106,7 @@ Name of the target field that will contain the storage size in bytes
 Which conversion method to use when converting to bytes. `binary` uses `1K = 1024B`. `metric` uses `1K = 1000B`.
 
 [id="plugins-{type}s-{plugin}-decimal_separator"]
-===== `source` 
+===== `decimal_separator` 
 
   * Value type is <<string,string>>
   * Default value is `.`
