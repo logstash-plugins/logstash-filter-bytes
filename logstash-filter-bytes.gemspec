@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'logstash-filter-bytes'
-  s.version       = '1.0.2'
+  s.version       = '1.0.3'
   s.licenses      = ['Apache-2.0']
   s.summary       = "This filter parses strings representing computer storage sizes into numeric bytes"
   s.description   = 'This filter parses strings representing computer storage sizes (e.g. "123 MB" or "6.3GB") into numeric bytes (12'
